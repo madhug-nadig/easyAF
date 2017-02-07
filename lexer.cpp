@@ -46,47 +46,67 @@ int main(){
 	keyMap["<="] = 208;
 	// values 300-INFINITY for variable names
 	unordered_map<string, int> symtab;
-
+	
+	//key is the variable that stores the raw input string
 	string key;
-	char in;
+	
+	//Symtab index stores value in the key value pair. Set it 300 default for variables.
 	int symtabIndex = 300;
+	
+	//Infinite loop, keeps taking ip for now. File I/O will take care of this.
 	while(true){
-		// cout<<"enter token:\t";
+		//Take the input
 		cin >> key;
+		//TempKey is where we store the extracted substring, ie. something that matches a regex or a hashed value
 		string tempKey;
-
+		
+		//strb is used so as to find out the end of a matched substring.
 		int strB = 0;
+		
 		while(strB < key.length()){
+			//i stores the starting index of the substring.
 			int i = strB;
 			for(;strB<key.length();strB++){
-				if(key[strB] == ' ' ||key[strB] == ',' ||key[strB] == ';' ||key[strB] == '+' ||key[strB] == '-' ||key[strB] == '*' ||key[strB] == '/' ||key[strB] == '(' ||key[strB] == ')') break;
+				//Below is where we figure out the breakpoint for the substring.
+				if(key[strB] == ' ' ||key[strB] == ',' ||key[strB] == ';' ||key[strB] == '+' ||key[strB] == '-' ||key[strB] == '*' ||key[strB] == '/' ||key[strB] == '(' ||key[strB] == ')') 
+					break;
+				//Lookahead for certain operators
 				else if(key[strB] == '='  ||key[strB] == '>' ||key[strB] == '<' ||key[strB] == '!'){
-					if(key[strB+1] == '=' && (strB-i<1)) strB+=2;
+					if(key[strB+1] == '=' && (strB-i<1)) {
+						//Incrementing it by to 2 so as to compensate for the look ahead
+						strB+=2;
+					}
 					break;
 				}
 			}
-			int len;
+			int len; // length of the substring
 			len = strB-i;
+			// If a single character then, len will be 0 since no increment is carried in that case, this following if will take of of it
 			if(len == 0){
 				len = 1;
 				strB++;
 			}
+			
 			tempKey = key.substr(i,len);
+			//If comment, break out. No need to fiddle around the Symbol table.
 			if(regex_match(tempKey,comm)) {
 				cout<<"comment"<<endl;
 				cout<<"----------------------------------------------------------------------"<<endl;
 				break;
 			}
-			// cout << tempKey<<endl;
+			// TODO: Fix this. The entry will be added to symtab regardless of it's prior presence
 			unordered_map<string,int>::iterator it = symtab.find(tempKey);
+			// Not found in symtab
 			if(it == symtab.end()){
 				    cout << tempKey << " not found\n";
+				    // Find the type of the matched string.
 				    unordered_map<string,int>::iterator keyIt = keyMap.find(tempKey);
+				    // Add to the symbol table
 				    if(keyIt != keyMap.end()){
 				    	symtab[tempKey] = keyIt->second;
 				    	cout << "added " << tempKey << " to symtab at index " << keyIt->second << endl;
 				    }
-
+				    // Else add it by using the def symtabIndex, because it's not a kw/punctuation/operator.
 				    else{
 				    	symtab[tempKey] = symtabIndex++;
 					    cout << "added " << tempKey << " to symtab at index " << symtabIndex-1 << endl;
@@ -94,6 +114,7 @@ int main(){
 				}
 			else
 			    cout << "Found " << it->first <<" with value "<< it->second << "\n";
+			// Use RegEx to find the type of token
 			if(regex_match(tempKey,key1)) cout<<"keyword"<<endl;
 			else{
 				if(regex_match(tempKey,varname)) cout<<"var"<<endl;
@@ -103,5 +124,6 @@ int main(){
 			cout<<"----------------------------------------------------------------------"<<endl;
 		}
 	}
+	// Return SUCCESS. HELL YEAH!
 	return 0;
 }
