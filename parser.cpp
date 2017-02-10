@@ -57,12 +57,12 @@ int main(){
 		while(state!=0){
 
 			cout<<"\n";
-			for(position=0;position<ip_length;position++){
+			for(position=0; position<ip_length; position++){
 				cout<<stack[position];
 			}
 
 			cout<<"\t";
-			for(position=iter; position<ip_length;position++){
+			for(position=iter; position<ip_length; position++){
 				cout<<input[position];
 			}
 

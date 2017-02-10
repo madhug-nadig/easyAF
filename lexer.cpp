@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <regex>
-// #include <bits/stdc++.h>
+
 using namespace std;
 
 int main(){
@@ -11,6 +11,8 @@ int main(){
 	regex string1("(\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\")|(\'[^\'\\\\]*(?:\\\\.[^\'\\\\]*)*\')");
 	regex varname("[a-zA-Z_][a-zA-Z0-9_]{0,31}");
 	regex key1("if|else|elif|for|while|is|not|function|return|break|continue|goto");
+	regex relop("<|>|==|!=|>=|<=");
+	regex op("\\+|\\-|\\*|\\/");
 	regex comm("#.*$");
 
 	unordered_map<string, int> keyMap;
@@ -50,20 +52,25 @@ int main(){
 	//key is the variable that stores the raw input string
 	string key;
 	
-	//Symtab index stores value in the key value pair. Set it 300 default for variables.
-	int symtabIndex = 300;
+	//Symtab index stores value in the key value pair. Set it 300 default for variables. Start at line number 1. Comment flag set to zero.
+	int symtabIndex = 300, comment_flag = 0, line = 1;
 	
 	//Infinite loop, keeps taking ip for now. File I/O will take care of this.
 	while(true){
+
 		//Take the input
 		cin >> key;
+
 		//TempKey is where we store the extracted substring, ie. something that matches a regex or a hashed value
 		string tempKey;
-		
+
+
 		//strb is used so as to find out the end of a matched substring.
 		int strB = 0;
 		
+
 		while(strB < key.length()){
+
 			//i stores the starting index of the substring.
 			int i = strB;
 			for(;strB<key.length();strB++){
@@ -79,6 +86,7 @@ int main(){
 					break;
 				}
 			}
+
 			int len; // length of the substring
 			len = strB-i;
 			// If a single character then, len will be 0 since no increment is carried in that case, this following if will take of of it
@@ -94,11 +102,12 @@ int main(){
 				cout<<"----------------------------------------------------------------------"<<endl;
 				break;
 			}
+
 			// TODO: Fix this. The entry will be added to symtab regardless of it's prior presence
 			unordered_map<string,int>::iterator it = symtab.find(tempKey);
 			// Not found in symtab
 			if(it == symtab.end()){
-				    cout << tempKey << " not found\n";
+				    cout << tempKey << " not found in the Symbol table. \n";
 				    // Find the type of the matched string.
 				    unordered_map<string,int>::iterator keyIt = keyMap.find(tempKey);
 				    // Add to the symbol table
@@ -111,16 +120,21 @@ int main(){
 				    	symtab[tempKey] = symtabIndex++;
 					    cout << "added " << tempKey << " to symtab at index " << symtabIndex-1 << endl;
 					}
+
 				}
 			else
-			    cout << "Found " << it->first <<" with value "<< it->second << "\n";
+			    cout << "Found in the symbol" << it->first <<" with value "<< it->second << "\n";
 			// Use RegEx to find the type of token
 			if(regex_match(tempKey,key1)) cout<<"keyword"<<endl;
 			else{
 				if(regex_match(tempKey,varname)) cout<<"var"<<endl;
-				if(regex_match(tempKey,string1)) cout<<"string"<<endl;
-				if(regex_match(tempKey,integer)) cout<<"integer"<<endl;
+				else if(regex_match(tempKey,string1)) cout<<"string"<<endl;
+				else if(regex_match(tempKey,integer)) cout<<"integer"<<endl;
+				else if(regex_match(tempKey,relop)) cout<<"Relational Operator"<<endl;
+				else if(regex_match(tempKey,op)) cout<<"Operator"<<endl;
+				else cout<<"ERROR! Plx check the syntax"<<endl;
 			}
+			cout << "Line number: " << line<< endl;
 			cout<<"----------------------------------------------------------------------"<<endl;
 		}
 	}
