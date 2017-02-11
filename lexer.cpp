@@ -53,13 +53,22 @@ int main(){
 	string key;
 	
 	//Symtab index stores value in the key value pair. Set it 300 default for variables. Start at line number 1. Comment flag set to zero.
-	int symtabIndex = 300, comment_flag = 0, line = 1;
+	int symtabIndex = 300, line = 0;
+
+	// boolean flag to keep track whether the input string is a comment or not.
+	bool comment_flag = false;
 	
 	//Infinite loop, keeps taking ip for now. File I/O will take care of this.
 	while(true){
 
 		//Take the input
-		cin >> key;
+		getline(cin,key);
+
+		// increment the line
+		line++;
+
+		// make flag set to false intitally
+		comment_flag = false;
 
 		//TempKey is where we store the extracted substring, ie. something that matches a regex or a hashed value
 		string tempKey;
@@ -70,6 +79,8 @@ int main(){
 		
 
 		while(strB < key.length()){
+			// if the input string is a comment, break out of the loop.
+			if(comment_flag) break;
 
 			//i stores the starting index of the substring.
 			int i = strB;
@@ -80,7 +91,7 @@ int main(){
 				//Lookahead for certain operators
 				else if(key[strB] == '='  ||key[strB] == '>' ||key[strB] == '<' ||key[strB] == '!'){
 					if(key[strB+1] == '=' && (strB-i<1)) {
-						//Incrementing it by to 2 so as to compensate for the look ahead
+						//Incrementing it by to 2 so as to compensate for the look ahead.
 						strB+=2;
 					}
 					break;
@@ -89,7 +100,7 @@ int main(){
 
 			int len; // length of the substring
 			len = strB-i;
-			// If a single character then, len will be 0 since no increment is carried in that case, this following if will take of of it
+			// If a single character then, len will be 0 since no increment is carried in that case, this following if will take of of it.
 			if(len == 0){
 				len = 1;
 				strB++;
@@ -99,6 +110,9 @@ int main(){
 			//If comment, break out. No need to fiddle around the Symbol table.
 			if(regex_match(tempKey,comm)) {
 				cout<<"comment"<<endl;
+				// set the flag indicating the string is a comment.
+				comment_flag = true;
+				cout << "Line number: " << line<< endl;
 				cout<<"----------------------------------------------------------------------"<<endl;
 				break;
 			}
@@ -124,7 +138,7 @@ int main(){
 				}
 			else
 			    cout << "Found in the symbol" << it->first <<" with value "<< it->second << "\n";
-			// Use RegEx to find the type of token
+			// Use RegEx to find the type of token.
 			if(regex_match(tempKey,key1)) cout<<"keyword"<<endl;
 			else{
 				if(regex_match(tempKey,varname)) cout<<"var"<<endl;
