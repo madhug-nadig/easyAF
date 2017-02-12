@@ -57,7 +57,7 @@ int main(){
 		while(state!=0){
 
 			cout<<"\n";
-			for(position=0; position<ip_length; position++){
+			for(position=0; position<start_position; position++){
 				cout<<stack[position];
 			}
 
