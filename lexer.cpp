@@ -59,7 +59,7 @@ int main(){
 	bool comment_flag = false;
 	
 	//Infinite loop, keeps taking ip for now. File I/O will take care of this.
-	while(true){
+	while(cin){
 
 		//Take the input
 		getline(cin,key);
@@ -152,6 +152,17 @@ int main(){
 			cout<<"----------------------------------------------------------------------"<<endl;
 		}
 	}
+	cout<<"----------------SYMBOL TABLE STARTS HERE----------------"<<endl;
+	// std::vector<Key> keys;
+	// keys.reserve(map.size());
+	// std::vector<Val> vals;
+	// vals.reserve(map.size());
+
+	for(auto kv : symtab) {
+	    // keys.push_back(kv.first);
+	    // vals.push_back(kv.second);  
+	    cout<<kv.first<<"\t"<<kv.second<<endl;
+	}	
 	// Return SUCCESS. HELL YEAH!
 	return 0;
 }
