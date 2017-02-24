@@ -6,11 +6,25 @@
 
 using namespace std;
 
+string trimSpace(const string &str) {
+   if (str.empty()) return str;
+   string::size_type i,j;
+   i=0;
+   while (i<str.size() && isspace(str[i])) ++i;
+   if (i == str.size())
+      return string(); // empty string
+   j = str.size() - 1;
+
+   while (isspace(str[j])) --j;
+   return str.substr(i, j-i+1);
+}
+
 int main(){
 	regex integer("(\\+|-)?[[:digit:]]+");
 	regex string1("(\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\")|(\'[^\'\\\\]*(?:\\\\.[^\'\\\\]*)*\')");
 	regex varname("[a-zA-Z_][a-zA-Z0-9_]{0,31}");
 	regex key1("if|else|elif|for|while|is|not|function|return|break|continue|goto");
+	regex punctuation("\\(|\\)|\\{|\\}|\\,");
 	regex relop("<|>|==|!=|>=|<=");
 	regex op("\\+|\\-|\\*|\\/");
 	regex comm("#.*$");
@@ -36,6 +50,8 @@ int main(){
 	keyMap["\'"] = 103;
 	keyMap["("] = 104;
 	keyMap[")"] = 105;
+	keyMap["}"] = 106;
+	keyMap["{"] = 107;
 	// values 200-299 for relational operators
 	keyMap["*"] = 200;
 	keyMap["/"] = 201;
@@ -86,7 +102,7 @@ int main(){
 			int i = strB;
 			for(;strB<key.length();strB++){
 				//Below is where we figure out the breakpoint for the substring.
-				if(key[strB] == ' ' ||key[strB] == ',' ||key[strB] == ';' ||key[strB] == '+' ||key[strB] == '-' ||key[strB] == '*' ||key[strB] == '/' ||key[strB] == '(' ||key[strB] == ')') 
+				if(key[strB] == ' ' ||key[strB] == ',' ||key[strB] == ';' ||key[strB] == '+' ||key[strB] == '-' ||key[strB] == '*' ||key[strB] == '/' ||key[strB] == '(' || key[strB] == ')' || key[strB] == '}' || key[strB] == '{') 
 					break;
 				//Lookahead for certain operators
 				else if(key[strB] == '='  ||key[strB] == '>' ||key[strB] == '<' ||key[strB] == '!'){
@@ -106,7 +122,7 @@ int main(){
 				strB++;
 			}
 			
-			tempKey = key.substr(i,len);
+			tempKey = trimSpace(key.substr(i,len));
 			//If comment, break out. No need to fiddle around the Symbol table.
 			if(regex_match(tempKey,comm)) {
 				cout<<"comment"<<endl;
@@ -146,6 +162,7 @@ int main(){
 				else if(regex_match(tempKey,integer)) cout<<"integer"<<endl;
 				else if(regex_match(tempKey,relop)) cout<<"Relational Operator"<<endl;
 				else if(regex_match(tempKey,op)) cout<<"Operator"<<endl;
+				else if(regex_match(tempKey,punctuation)) cout<<"Punctuation"<<endl;
 				else cout<<"ERROR! Plx check the syntax"<<endl;
 			}
 			cout << "Line number: " << line<< endl;
@@ -153,15 +170,9 @@ int main(){
 		}
 	}
 	cout<<"----------------SYMBOL TABLE STARTS HERE----------------"<<endl;
-	// std::vector<Key> keys;
-	// keys.reserve(map.size());
-	// std::vector<Val> vals;
-	// vals.reserve(map.size());
 
 	for(auto kv : symtab) {
-	    // keys.push_back(kv.first);
-	    // vals.push_back(kv.second);  
-	    cout<<kv.first<<"\t"<<kv.second<<endl;
+	    cout<<kv.first<<": \t"<<kv.second<<endl;
 	}	
 	// Return SUCCESS. HELL YEAH!
 	return 0;
