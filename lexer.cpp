@@ -5,26 +5,17 @@
 #include <regex>
 
 using namespace std;
-
-string trimSpace(const string &str) {
-   if (str.empty()) return str;
-   string::size_type i,j;
-   i=0;
-   while (i<str.size() && isspace(str[i])) ++i;
-   if (i == str.size())
-      return string(); // empty string
-   j = str.size() - 1;
-
-   while (isspace(str[j])) --j;
-   return str.substr(i, j-i+1);
-}
+class info{
+public:
+	vector<int> line;
+	int value;
+};
 
 int main(){
 	regex integer("(\\+|-)?[[:digit:]]+");
 	regex string1("(\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\")|(\'[^\'\\\\]*(?:\\\\.[^\'\\\\]*)*\')");
 	regex varname("[a-zA-Z_][a-zA-Z0-9_]{0,31}");
 	regex key1("if|else|elif|for|while|is|not|function|return|break|continue|goto");
-	regex punctuation("\\(|\\)|\\{|\\}|\\,");
 	regex relop("<|>|==|!=|>=|<=");
 	regex op("\\+|\\-|\\*|\\/");
 	regex comm("#.*$");
@@ -50,8 +41,6 @@ int main(){
 	keyMap["\'"] = 103;
 	keyMap["("] = 104;
 	keyMap[")"] = 105;
-	keyMap["}"] = 106;
-	keyMap["{"] = 107;
 	// values 200-299 for relational operators
 	keyMap["*"] = 200;
 	keyMap["/"] = 201;
@@ -63,7 +52,7 @@ int main(){
 	keyMap[">="] = 207;
 	keyMap["<="] = 208;
 	// values 300-INFINITY for variable names
-	unordered_map<string, int> symtab;
+	unordered_map<string, info> symtab;
 	
 	//key is the variable that stores the raw input string
 	string key;
@@ -79,6 +68,8 @@ int main(){
 
 		//Take the input
 		getline(cin,key);
+
+		cout<<key<<endl;
 
 		// increment the line
 		line++;
@@ -102,7 +93,7 @@ int main(){
 			int i = strB;
 			for(;strB<key.length();strB++){
 				//Below is where we figure out the breakpoint for the substring.
-				if(key[strB] == ' ' ||key[strB] == ',' ||key[strB] == ';' ||key[strB] == '+' ||key[strB] == '-' ||key[strB] == '*' ||key[strB] == '/' ||key[strB] == '(' || key[strB] == ')' || key[strB] == '}' || key[strB] == '{') 
+				if(key[strB] == ' ' || key[strB] == '\t' ||key[strB] == ',' ||key[strB] == ';' ||key[strB] == '+' ||key[strB] == '-' ||key[strB] == '*' ||key[strB] == '/' ||key[strB] == '(' ||key[strB] == ')') 
 					break;
 				//Lookahead for certain operators
 				else if(key[strB] == '='  ||key[strB] == '>' ||key[strB] == '<' ||key[strB] == '!'){
@@ -122,7 +113,7 @@ int main(){
 				strB++;
 			}
 			
-			tempKey = trimSpace(key.substr(i,len));
+			tempKey = key.substr(i,len);
 			//If comment, break out. No need to fiddle around the Symbol table.
 			if(regex_match(tempKey,comm)) {
 				cout<<"comment"<<endl;
@@ -133,8 +124,10 @@ int main(){
 				break;
 			}
 
+			if(tempKey == " " || tempKey == "\t") continue;
+
 			// TODO: Fix this. The entry will be added to symtab regardless of it's prior presence
-			unordered_map<string,int>::iterator it = symtab.find(tempKey);
+			unordered_map<string,info>::iterator it = symtab.find(tempKey);
 			// Not found in symtab
 			if(it == symtab.end()){
 				    cout << tempKey << " not found in the Symbol table. \n";
@@ -142,18 +135,26 @@ int main(){
 				    unordered_map<string,int>::iterator keyIt = keyMap.find(tempKey);
 				    // Add to the symbol table
 				    if(keyIt != keyMap.end()){
-				    	symtab[tempKey] = keyIt->second;
-				    	cout << "added " << tempKey << " to symtab at index " << keyIt->second << endl;
+				    	info add;
+				    	add.line.push_back(line);
+				    	add.value = keyIt->second;
+				    	symtab.insert(pair<string,info>(tempKey,add));
+				    	cout << "added " << tempKey << endl;
 				    }
 				    // Else add it by using the def symtabIndex, because it's not a kw/punctuation/operator.
 				    else{
-				    	symtab[tempKey] = symtabIndex++;
-					    cout << "added " << tempKey << " to symtab at index " << symtabIndex-1 << endl;
+				    	info add;
+				    	add.line.push_back(line);
+				    	add.value = symtabIndex++;
+				    	symtab.insert(pair<string,info>(tempKey,add));
+					    cout << "added " << tempKey << endl;
 					}
 
 				}
-			else
-			    cout << "Found in the symbol" << it->first <<" with value "<< it->second << "\n";
+			else{
+			    cout << "Found the symbol " << it->first <<" with value "<< it->second.value << "\n";
+		    	it->second.line.push_back(line);
+			}
 			// Use RegEx to find the type of token.
 			if(regex_match(tempKey,key1)) cout<<"keyword"<<endl;
 			else{
@@ -162,17 +163,20 @@ int main(){
 				else if(regex_match(tempKey,integer)) cout<<"integer"<<endl;
 				else if(regex_match(tempKey,relop)) cout<<"Relational Operator"<<endl;
 				else if(regex_match(tempKey,op)) cout<<"Operator"<<endl;
-				else if(regex_match(tempKey,punctuation)) cout<<"Punctuation"<<endl;
 				else cout<<"ERROR! Plx check the syntax"<<endl;
 			}
-			cout << "Line number: " << line<< endl;
+			cout << "Line number: " << line << endl;
 			cout<<"----------------------------------------------------------------------"<<endl;
 		}
 	}
 	cout<<"----------------SYMBOL TABLE STARTS HERE----------------"<<endl;
-
+	cout<<"Symbol\tLine\tValue"<<endl;
 	for(auto kv : symtab) {
-	    cout<<kv.first<<": \t"<<kv.second<<endl;
+	    cout<<kv.first<<"\t";
+    	for (std::vector<int>::const_iterator i = kv.second.line.begin(); i != kv.second.line.end(); ++i){
+	        std::cout << *i << ' ';	
+    	}
+	    cout<<"\t"<<kv.second.value<<endl;
 	}	
 	// Return SUCCESS. HELL YEAH!
 	return 0;
