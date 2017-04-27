@@ -124,7 +124,7 @@ int main(){
 		iter++;
 		start_position++;
 
-	}while(strlen(stack)!=1 && start_position!=ip_length);
+	}while(strlen(stack)!=1 && start_position!=ip_length+1);
 
 	if(strlen(stack)==1){
 		cout<<"\nString Accepted";
